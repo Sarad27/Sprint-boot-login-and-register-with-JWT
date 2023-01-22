@@ -3,12 +3,19 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/human_resource_management
-    username: root
-    password: password
-    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:postgresql://localhost:5432/human_resource_management
+    username: postgres
+    password: admin
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate_sql: true
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
 

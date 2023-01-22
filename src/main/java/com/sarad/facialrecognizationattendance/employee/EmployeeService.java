@@ -1,12 +1,16 @@
 package com.sarad.facialrecognizationattendance.employee;
 
 import com.sarad.facialrecognizationattendance.entity.Employee;
-import com.sarad.facialrecognizationattendance.entity.Role;
+import com.sarad.facialrecognizationattendance.fileStorage.FileStorageService;
 import com.sarad.facialrecognizationattendance.helper.EnumHelper;
+import com.sarad.facialrecognizationattendance.helper.FIleStorageNameHelper;
 import com.sarad.facialrecognizationattendance.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +22,12 @@ public class EmployeeService {
 
     @Autowired
     private EnumHelper enumHelper;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @Autowired
+    private FIleStorageNameHelper fIleStorageNameHelper;
 
     public void add(EmployeeRequest request) {
         var employee = Employee.builder()
@@ -69,6 +79,28 @@ public class EmployeeService {
     public void deleteEmployee(Long id) {
 
         employeeRepository.deleteById(id);
+
+    }
+
+    public void uploadImages(Long id,MultipartFile[] files) {
+        Optional<Employee> employee = employeeRepository.findById(id);
+        if(employee.isPresent()){
+
+            Employee _employee = employee.get();
+
+            ArrayList <String> fileNames = new ArrayList<>();
+
+
+            Arrays.stream(files).forEach(file -> {
+                fileStorageService.save(file);
+                fileNames.add(fIleStorageNameHelper.fileNameTimestamp(file.getOriginalFilename()));
+            });
+
+            String[] images = fileNames.toArray(new String[0]);
+
+            _employee.setImages(images);
+            employeeRepository.save(_employee);
+        }
 
     }
 }

@@ -5,6 +5,7 @@ import com.sarad.facialrecognizationattendance.entity.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -46,6 +47,13 @@ public class EmployeeController {
         Optional<Employee> employee = employeeService.patchRole(id, enumRequest);
         return ResponseEntity.ok(employee);
     }
+
+    @PatchMapping("/uploadImages/{id}")
+    public ResponseEntity<String> uploadFiles(@PathVariable(value = "id") Long id, @RequestParam("files") MultipartFile[] files){
+        employeeService.uploadImages(id,files);
+        return ResponseEntity.ok("Files Uploaded");
+    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteEmployee(@PathVariable(value = "id") Long id){
