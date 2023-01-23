@@ -1,6 +1,7 @@
 package com.sarad.facialrecognizationattendance.employee;
 
 import com.sarad.facialrecognizationattendance.entity.Employee;
+import com.sarad.facialrecognizationattendance.exception.ResourceNotFoundException;
 import com.sarad.facialrecognizationattendance.fileStorage.FileStorageService;
 import com.sarad.facialrecognizationattendance.helper.EnumHelper;
 import com.sarad.facialrecognizationattendance.helper.FIleStorageNameHelper;
@@ -29,7 +30,7 @@ public class EmployeeService {
     @Autowired
     private FIleStorageNameHelper fIleStorageNameHelper;
 
-    public void add(EmployeeRequest request) {
+    public Employee add(EmployeeRequest request) {
         var employee = Employee.builder()
                 .email(request.getEmail())
                 .firstName(request.getFirstName())
@@ -37,56 +38,46 @@ public class EmployeeService {
                 .dateOfBirth(request.getDateOfBirth())
                 .build();
 
-        employeeRepository.save(employee);
+        return employeeRepository.save(employee);
     }
 
     public List<Employee> getAll() {
-        List<Employee> employees = employeeRepository.findAll();
-        return employees;
+        return employeeRepository.findAll();
     }
 
-    public Optional<Employee> getById(Long id) {
-        Optional<Employee> employee = employeeRepository.findById(id);
+    public Employee getById(Long id) {
+        return employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found user with id = " + id));
+    }
+
+    public Employee updateEmployee(Long id, EmployeeRequest request) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found user with id = " + id));
+
+        employee.setEmail(request.getEmail());
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        employee.setDateOfBirth(request.getDateOfBirth());
+        employeeRepository.save(employee);
         return employee;
     }
 
-    public Optional<Employee> updateEmployee(Long id, EmployeeRequest request) {
-        Optional<Employee> employee = employeeRepository.findById(id);
+    public Employee patchRole(Long id, EmployeeEnumRequest enumRequest) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found user with id = " + id));
 
-        if(employee.isPresent()){
-            Employee _employee = employee.get();
-            _employee.setEmail(request.getEmail());
-            _employee.setFirstName(request.getFirstName());
-            _employee.setLastName(request.getLastName());
-            _employee.setDateOfBirth(request.getDateOfBirth());
-            employeeRepository.save(_employee);
-        }
-
-        return employee;
-    }
-
-    public Optional<Employee> patchRole(Long id, EmployeeEnumRequest enumRequest) {
-        Optional<Employee> employee = employeeRepository.findById(id);
-        if(employee.isPresent()){
-            Employee _employee = employee.get();
-           _employee.setRole(enumHelper.roleEnumHelper(enumRequest.getEnumString()));
-            employeeRepository.save(_employee);
-        }
-
+        employee.setRole(enumHelper.roleEnumHelper(enumRequest.getEnumString()));
+        employeeRepository.save(employee);
         return employee;
     }
 
     public void deleteEmployee(Long id) {
-
         employeeRepository.deleteById(id);
-
     }
 
-    public void uploadImages(Long id,MultipartFile[] files) {
-        Optional<Employee> employee = employeeRepository.findById(id);
-        if(employee.isPresent()){
-
-            Employee _employee = employee.get();
+    public Employee uploadImages(Long id,MultipartFile[] files) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found user with id = " + id));
 
             ArrayList <String> fileNames = new ArrayList<>();
 
@@ -98,9 +89,8 @@ public class EmployeeService {
 
             String[] images = fileNames.toArray(new String[0]);
 
-            _employee.setImages(images);
-            employeeRepository.save(_employee);
-        }
+            employee.setImages(images);
+            return employeeRepository.save(employee);
 
     }
 }

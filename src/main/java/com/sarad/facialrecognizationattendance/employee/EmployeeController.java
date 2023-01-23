@@ -3,6 +3,7 @@ package com.sarad.facialrecognizationattendance.employee;
 import com.sarad.facialrecognizationattendance.entity.Employee;
 import com.sarad.facialrecognizationattendance.entity.Role;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,46 +20,49 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addEmployee(@Valid @RequestBody EmployeeRequest request){
-        employeeService.add(request);
-        return ResponseEntity.ok("Employee Added.");
+    public ResponseEntity<Employee> addEmployee(@Valid @RequestBody EmployeeRequest request){
+        Employee employee =  employeeService.add(request);
+        return new ResponseEntity<>(employee, HttpStatus.CREATED);
     }
 
     @GetMapping("/")
     public ResponseEntity<List<Employee>> getAllEmployee(){
         List<Employee> employees = employeeService.getAll();
-        return ResponseEntity.ok(employees);
+        if(employees.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<Employee>> getEmployeeById(@PathVariable(value = "id") Long id){
-        Optional<Employee> employee = employeeService.getById(id);
-        return ResponseEntity.ok(employee);
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable(value = "id") Long id){
+        Employee employee = employeeService.getById(id);
+        return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Optional<Employee>> updateEmployee(@PathVariable(value = "id") Long id, @RequestBody EmployeeRequest request){
-        Optional<Employee> employee = employeeService.updateEmployee(id, request);
-        return ResponseEntity.ok(employee);
+    public ResponseEntity<Employee> updateEmployee(@PathVariable(value = "id") Long id, @RequestBody EmployeeRequest request){
+        Employee employee = employeeService.updateEmployee(id, request);
+        return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
     @PatchMapping("/update/role/{id}")
-    public ResponseEntity<Optional<Employee>> patchRole(@PathVariable(value = "id") Long id, @RequestBody EmployeeEnumRequest enumRequest){
-        Optional<Employee> employee = employeeService.patchRole(id, enumRequest);
-        return ResponseEntity.ok(employee);
+    public ResponseEntity<Employee> patchRole(@PathVariable(value = "id") Long id, @RequestBody EmployeeEnumRequest enumRequest){
+        Employee employee = employeeService.patchRole(id, enumRequest);
+        return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
     @PatchMapping("/uploadImages/{id}")
-    public ResponseEntity<String> uploadFiles(@PathVariable(value = "id") Long id, @RequestParam("files") MultipartFile[] files){
-        employeeService.uploadImages(id,files);
-        return ResponseEntity.ok("Files Uploaded");
+    public ResponseEntity<Employee> uploadFiles(@PathVariable(value = "id") Long id, @RequestParam("files") MultipartFile[] files){
+        Employee employee = employeeService.uploadImages(id,files);
+        return new ResponseEntity<>(employee,HttpStatus.OK);
     }
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteEmployee(@PathVariable(value = "id") Long id){
+    public ResponseEntity<HttpStatus> deleteEmployee(@PathVariable(value = "id") Long id){
         employeeService.deleteEmployee(id);
-        return ResponseEntity.ok("Employee deleted.");
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }
