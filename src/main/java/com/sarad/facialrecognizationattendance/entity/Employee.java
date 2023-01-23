@@ -38,17 +38,14 @@ public class Employee {
     private long id;
 
     @Column(nullable = false, unique = true)
-    @NotBlank(message = "Email is mandatory")
     @Email
     private String email;
 
     @Column(nullable = false)
-    @NotBlank(message = "First name is mandatory")
     private String firstName;
 
 
     @Column(nullable = false)
-    @NotBlank(message = "Last name is mandatory")
     private String lastName;
 
     @Enumerated(EnumType.STRING)
